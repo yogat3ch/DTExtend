@@ -10,7 +10,7 @@ useDTExtend <- function() {
       version = utils::packageVersion("DTExtend"),
       package = "DTExtend",
       src = "srcjs",
-      script = list(src = "dtextend-min.js")
+      script = list(src = "dtextend.min.js")
     )
   )
 }
