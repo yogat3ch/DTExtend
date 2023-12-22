@@ -1,92 +1,51 @@
 /**
- * @param  {Object} jq - A jQuery DOM object
- * @returns {Array} stripped of jQuery methods
- */
-function jqueryObjsOnly(jq) {
-  var out = [];
-  for (i = 0; i < jq.length; i++) {
-    out.push(jq[[i]]);
-  }
-  return out;
-}
-
-/**
- * @param  {String} id An id to check for the hash (#) symbol
- * @param {Boolean} rm_hash whether to remove the hash symbol if it has it
- * @returns {String} Returns an id String with or without the hash based on the rm_hash argument
- */
-function id_check(id, rm_hash = false) {
-  let reg = new RegExp("^#");
-  if (!reg.test(id) && !rm_hash) {
-    id = "#" + id;
-  } else if (rm_hash) {
-    if (reg.test(id)) {
-      id = id.substring(1);
+* Make a DT keyboard accessible by enabling return key to select, populates the `_row_last_clicked` and the `_rows_selected` Shiny inputs
+*
+* @param {DataTable} table A DataTable object, passed in via the callback automatically.
+*/
+function dt_tab_accessible(table) {
+  
+  table.on('key', function(e, datatable, key, cell, originalEvent){
+    var table_id = cell.table().node().id;
+    var shiny_id = $('#' + table_id).parent().parent().attr('id');
+    if (key == 13){
+      // When return is pressed
+      // Select the row
+      let row_idx = cell.index().row;
+      let tr = $(datatable.row(row_idx).node())
+      if (tr.hasClass("selected")) {
+        tr.removeClass('selected');
+      } else {
+        tr.addClass("selected")
+      }
+      
+      // TODO how to set class on tr, update crosstalk inputs?
+      // Update the Shiny inputs
+      // row_last_clicked
+      Shiny.setInputValue(shiny_id + '_row_last_clicked', row_idx + 1, {priority: 'event'})
+      // rows_selected
+      let trs = tr.parent("tbody").children('tr');
+      let sel_idx = tagMatch(trs, (e)=> {return $(e).hasClass('selected')});
+      let rows_selected = sel_idx.map(i => i+1) 
+      Shiny.setInputValue(shiny_id + '_rows_selected', rows_selected, {priority: 'event'})
     }
-  }
-  return id;
+  });
 }
 
 
 /**
- * Map for objects
- * @param {String} obj Object to map
- * @param {Function} fn callback to map with
- * @returns  {Logical}
- */
-const objectMap = (obj, fn) =>
-  Object.fromEntries(
-    Object.entries(obj).map(
-      ([k, v], i) => [k, fn(v, k, i)]
-    )
-  )
+* Add important to the background-color on the policy_id column to retain the color style
+* @param {String} id Table ID
+* @returns  undefined
+*/
 
-
-/**
- * Replaces the Search: on a datatable search widget with a FontAwesome magnifying glass
- * @param  {String} selector The datatable ID
- * @returns  {Logical}
- */
-function dt_search_icon(selector) {
-    var el = `#${selector}_filter`;
-    var f = $(el);
-    var a = f.html();
-    if (a) {
-      a = a.replace(/Search:/g, '<i class="fas fa-magnifying-glass p-2"></i>');
-      $(f).html(a);
-      f.find('input').attr('placeholder', 'Search');
-    }
-}
-
-/**
- * Replaces the Filter placeholders on a DT based on the column data-type
- * @param {String} id Datatable ID
- * @param {String} character Filter box placeholder for character type columns
- * @param {String} integer  Filter box placeholder for integer type columns
- * @param {String} number Filter box placeholder for number type columns
- * @returns Changes the filters as a side affect, returns nothing
- */
-function dt_filter_placeholders(id = table.table().node().id, character = 'Search', integer = 'Use Slider', number = 'Use Slider') {
-   $('#' + id + " td[data-type='character'] input[type='search']").attr('placeholder', character);
-   $('#' + id + " td[data-type='integer'] input[type='search']").attr('placeholder', integer);
-   $('#' + id + " td[data-type='number'] input[type='search']").attr('placeholder', number);
-}
-
-/**
- * Add !important to the background-color on the policy_id column to retain the color style
- * @param {String} id Table ID
- * @param {String} cl Class to retain color for
- * @returns  undefined
- */
-
-function dt_retain_policy_color(id, cl = "dt-policy_id") {
-  var pid =  jqueryObjsOnly($("#" + id + " td." + cl))
+function dt_retain_policy_color(id) {
+  var pid =  jqueryObjsOnly($("#" + id + " td.dt-policy_id"))
   if (pid) {
     pid.forEach((e) => {
       let el = $(e)
       var style = el.attr('style');
       if (style && !/important\;$/g.test(style)) {
-        debugger;
         el.attr('style', style.split(/\;$/)[0] + ' !important;')
       }
     })
@@ -94,48 +53,83 @@ function dt_retain_policy_color(id, cl = "dt-policy_id") {
 }
 
 /**
- * Add important to the background-color on the policy_id column to retain the color style
- * @param {String} id Table ID
- * @returns  undefined
- */
+* Return the ID that can be used to reference the DataTable via the DataTable API
+* @param  {String} id Shiny or DataTable ID
+* @param {Logical} rm_hash Whether to remove the hash on the ID
+* @returns  {String} The DataTable ID
+*/
+function dt_table_id(id, rm_hash = false) {
+  var out = undefined;
+  if (!/^\#?DataTables/g.test(id)) {
+    out =  $( `${id_check(id)} table` ).attr('id');
+  } else {
+    out = id;
+  }
+  return id_check(out, rm_hash = rm_hash);
+}
 
-function dt_api(id) {
-  id = id_check(dt_table_id(id));
-  //return $.fn.dataTable.Api()
-  return $(id).DataTable()
+/**
+* Return the ID that can be used to reference the Shiny output widget containing the DataTable
+* @param  {String} id Shiny or DataTable ID
+* @param {Logical} rm_hash Whether to remove the hash on the ID
+* @returns  {String} The Shiny widget ID (with #)
+*/
+function dt_shiny_id(id, rm_hash = false) {
+  var out = undefined;
+  if (/^\#?DataTables/g.test(id)) {
+    out =  $( `${id_check(id)}` ).parent('.datatables').attr("id");
+  } else {
+    out = id;
+  }
+  return id_check(out, rm_hash = rm_hash);
 }
 /**
- * Get the header names for a DT
- * @param {String} id Table ID
- * @returns  undefined
+ * Return the DataTable API given a DataTable ID
+ *
+ * @param {String} id of the DataTable or the containing shiny DOM element
+ * @return {Object} DataTable API 
+ */
+function dt_api(id) {
+  //return $.fn.dataTable.Api()
+  return $(dt_table_id(id)).DataTable()
+}
+
+/**
+ * Return the DT column names
+ *
+ * @param {String} id of the DataTable or the containing shiny DOM element
+ * @return {Array} of the column names of the DataTable 
  */
 function dt_names(id) {
-  return Object.values(objectMap(jqueryObjsOnly($( `#${id} th` )), (e) => $(e).text()));
+  return Object.values(objectMap(jqueryObjsOnly($( `${dt_table_id(id)} th` )), (e) => $(e).text()));
 }
 
 /**
- * Get the values supplied to filters
- * @param {String} id Table ID
- * @returns  undefined
+ * Get DT Column filter values as array
+ *
+ * @param {String} id of the DataTable or the containing shiny DOM element
+ * @return {Array} of the DT filter fields 
  */
 function dt_filter_inputs(id) {
-  return jqueryObjsOnly($(id_check(id) + ' input[type=\"search\"]'));
+  return jqueryObjsOnly($(dt_table_id(id) + ' input[type=\"search\"]'));
 }
 
 /**
- * Reset the {id}_reset counter DT Input value to 0
- * @param {String} id Table ID
- * @returns  undefined
+ *
+ *
+ * @param {String} id of the DataTable or the containing shiny DOM element
+ * @returns Called for side-effect of assigning the `input$[DTOutput ID]_reset` a value of 0
  */
 function dt_filter_reset(id) {
-  Shiny.setInputValue(id + '_reset', 0, {priority: 'event'});
+  Shiny.setInputValue(dt_shiny_id(id, rm_hash = true) + '_reset', 0, {priority: 'event'});
 }
+
 /**
- * Set the filters on a DT
- * @param {String} id  Table ID
- * @param {Array} filter Array of strings to set as filteres
- * @param {Boolean}reset  Whether to signal shiny to reset the filters by setting the {id}_reset counter DT Input value to 0
- * @returns  undefined, Sets the {id}_search_columns Input value to the actual filter values
+ * Set DT Column filter values
+ * TODO This might not be working properly
+ * @param {String} id of the DataTable or the containing shiny DOM element
+ * @param {Array} [filters=[]] Filter values to set
+ * @param {boolean} [reset=false] Whether to reset the filter values
  */
 function dt_filter_set(id, filters = [], reset = false) {
   var t_id = dt_table_id(id);
@@ -169,26 +163,32 @@ function dt_filter_set(id, filters = [], reset = false) {
 }
 
 /**
- * Return the ID that can be used to reference the DataTable via the datatable API
- * @param  {String} id Shiny ID
- * @returns  {String} The Datatable ID
- */
-function dt_table_id(id) {
-  id = id_check(id);
-  var out = undefined;
-  if (!/^\#?DataTables/g.test(id)) {
-    out =  $( `${id_check(id)} table` ).attr('id');
-  } else {
-    out = id;
+* Replaces the Search: on a DataTable search widget with a FontAwesome magnifying glass
+* @param {String} selector The DataTable ID
+*/
+function dt_search_icon(id) {
+  var el = `${dt_table_id(id)}_filter`;
+  var f = $(el);
+  var a = f.html();
+  if (a) {
+    a = a.replace(/Search:/g, '<i class="fas fa-magnifying-glass p-2"></i>');
+    $(f).html(a);
+    f.find('input').attr('placeholder', 'Search');
   }
-  return out;
 }
 
 /**
- * Returns whether a DOM element is visible
- * @param  {String} selector
- * @returns  {Logical}
- */
-function isVisible(selector) {
-  return $(selector).is(":visible");
+* Replaces the Filter placeholders on a DT based on the column data-type
+* @param {String} id of the DataTable or the containing shiny DOM element
+* @param {String} character Filter box placeholder for character type columns
+* @param {String} integer Filter box placeholder for integer type columns
+* @param {String} number Filter box placeholder for number type columns
+* @returns Changes the filters as a side affect, returns nothing
+*/
+function dt_filter_placeholders(id, character = 'Search', integer = 'Use Slider', number = 'Use Slider') {
+  id = dt_table_id(id);
+  $(id + " td[data-type='character'] input[type='search']").attr('placeholder', character);
+  $(id + " td[data-type='integer'] input[type='search']").attr('placeholder', integer);
+  $(id + " td[data-type='number'] input[type='search']").attr('placeholder', number);
 }
+
