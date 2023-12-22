@@ -12,6 +12,7 @@ DT_callback(
   filter_placeholders = TRUE,
   retain_policy_color = TRUE,
   retain_selections = TRUE,
+  tab_accessible = FALSE,
   debugger = FALSE
 )
 }
@@ -29,6 +30,8 @@ DT_callback(
 \item{retain_policy_color}{\code{lgl} Whether to retain the color of the Policy ID column.}
 
 \item{retain_selections}{\code{lgl} Whether to retain the selections from the previous render of the table}
+
+\item{tab_accessible}{\code{lgl} Whether to enable row selection by pressing the \code{Enter} key. Requires \code{extensions = 'KeyTables'} with \code{options = list(keys = TRUE)}}
 
 \item{debugger}{\code{lgl} Whether to insert a debugger statement in the callback function}
 }
