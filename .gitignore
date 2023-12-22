@@ -5,3 +5,4 @@
 .DS_Store
 .quarto
 node_modules
+inst/srcjs/combined.js
