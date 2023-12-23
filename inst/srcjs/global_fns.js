@@ -53,7 +53,6 @@ function waitForEl(selector) {
     });
   }
 
-
 /**
  * Ensure a string is an ID (#id), or remove the hash from and ID string.
 * @param  {String} id An id to check for the hash (#) symbol
