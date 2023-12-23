@@ -31,7 +31,7 @@ DT_callback(
 
 \item{retain_selections}{\code{lgl} Whether to retain the selections from the previous render of the table}
 
-\item{tab_accessible}{\code{lgl} Whether to enable row selection by pressing the \code{Enter} key. Requires \code{extensions = 'KeyTables'} with \code{options = list(keys = TRUE)}}
+\item{tab_accessible}{\code{lgl} Whether to enable row selection by pressing the \code{Enter} key. Requires \code{extensions = 'KeyTables'} with \code{options = list(keys = TRUE)}. Sets a jQuery event listener which doesn't need to be re-established on table redraw.}
 
 \item{debugger}{\code{lgl} Whether to insert a debugger statement in the callback function}
 }
