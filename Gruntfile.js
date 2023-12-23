@@ -26,7 +26,13 @@ module.exports = function(grunt) {
       },
       uglify: {
         options: {
-          banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd HH:MM:ss") %> */\n'
+            compress: {
+                drop_debugger: false
+              },  
+            banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd HH:MM:ss") %> */\n',
+            mangle: {
+              keep_fargs: true
+            }
         },
         build: {
           src: 'inst/srcjs/combined.js',
