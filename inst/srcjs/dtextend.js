@@ -1,60 +1,6 @@
 /**
-* Make a DT keyboard accessible by enabling return key to select, populates the `_row_last_clicked` and the `_rows_selected` Shiny inputs
-*
-* @param {DataTable} table A DataTable object, passed in via the callback automatically.
-*/
-function dt_tab_accessible(table) {
-  
-  table.on('key', function(e, datatable, key, cell, originalEvent){
-    var table_id = cell.table().node().id;
-    var shiny_id = $('#' + table_id).parent().parent().attr('id');
-    if (key == 13){
-      // When return is pressed
-      // Select the row
-      let row_idx = cell.index().row;
-      let tr = $(datatable.row(row_idx).node())
-      if (tr.hasClass("selected")) {
-        tr.removeClass('selected');
-      } else {
-        tr.addClass("selected")
-      }
-      
-      // TODO how to set class on tr, update crosstalk inputs?
-      // Update the Shiny inputs
-      // row_last_clicked
-      Shiny.setInputValue(shiny_id + '_row_last_clicked', row_idx + 1, {priority: 'event'})
-      // rows_selected
-      let trs = tr.parent("tbody").children('tr');
-      let sel_idx = tagMatch(trs, (e)=> {return $(e).hasClass('selected')});
-      let rows_selected = sel_idx.map(i => i+1) 
-      Shiny.setInputValue(shiny_id + '_rows_selected', rows_selected, {priority: 'event'})
-    }
-  });
-}
-
-
-/**
-* Add important to the background-color on the policy_id column to retain the color style
-* @param {String} id Table ID
-* @returns  undefined
-*/
-
-function dt_retain_policy_color(id) {
-  var pid =  jqueryObjsOnly($("#" + id + " td.dt-policy_id"))
-  if (pid) {
-    pid.forEach((e) => {
-      let el = $(e)
-      var style = el.attr('style');
-      if (style && !/important\;$/g.test(style)) {
-        el.attr('style', style.split(/\;$/)[0] + ' !important;')
-      }
-    })
-  }
-}
-
-/**
 * Return the ID that can be used to reference the DataTable via the DataTable API
-* @param  {String} id Shiny or DataTable ID
+* @param {String} id of the DataTable or the containing shiny DOM element
 * @param {Logical} rm_hash Whether to remove the hash on the ID
 * @returns  {String} The DataTable ID
 */
@@ -69,8 +15,18 @@ function dt_table_id(id, rm_hash = false) {
 }
 
 /**
+ * Return the DT column names
+ *
+ * @param {String} id of the DataTable or the containing shiny DOM element
+ * @return {Array} of the column names of the DataTable 
+ */
+function dt_names(id) {
+  return Object.values(objectMap(jqueryObjsOnly($( `${dt_table_id(id)} th` )), (e) => $(e).text()));
+}
+
+/**
 * Return the ID that can be used to reference the Shiny output widget containing the DataTable
-* @param  {String} id Shiny or DataTable ID
+* @param {String} id of the DataTable or the containing shiny DOM element
 * @param {Logical} rm_hash Whether to remove the hash on the ID
 * @returns  {String} The Shiny widget ID (with #)
 */
@@ -83,6 +39,7 @@ function dt_shiny_id(id, rm_hash = false) {
   }
   return id_check(out, rm_hash = rm_hash);
 }
+
 /**
  * Return the DataTable API given a DataTable ID
  *
@@ -95,14 +52,66 @@ function dt_api(id) {
 }
 
 /**
- * Return the DT column names
- *
- * @param {String} id of the DataTable or the containing shiny DOM element
- * @return {Array} of the column names of the DataTable 
- */
-function dt_names(id) {
-  return Object.values(objectMap(jqueryObjsOnly($( `${dt_table_id(id)} th` )), (e) => $(e).text()));
+* Make a DT keyboard accessible by enabling return key to select, populates the `_row_last_clicked` and the `_rows_selected` Shiny inputs
+*
+* @param {String} id of the DataTable or the containing shiny DOM element
+*/
+function dt_tab_accessible(id) {
+  // Get the API
+  let table = dt_api(id);
+  if (document.debug_mode) {
+    console.log('dt_tab_accessible ran')
+  }
+  // This sets a jquery event listener which doesn't need to be re-established on Draw
+  table.on('key', function(e, datatable, key, cell, originalEvent){
+    var table_id = cell.table().node().id;
+    var shiny_id = $('#' + table_id).parent().parent().attr('id');
+    if (key == 13){
+      // When return is pressed
+      // Select the row
+      let row_idx = cell.index().row;
+      let tr = $(datatable.row(row_idx).node())
+      if (tr.hasClass("selected")) {
+        tr.removeClass('selected');
+      } else {
+        tr.addClass("selected")
+      }
+      let pn = datatable.page()
+      let pl = datatable.page.len()
+      // TODO how to set class on tr, update crosstalk inputs?
+      // Update the Shiny inputs
+      // row_last_clicked, account for R indexing
+      Shiny.setInputValue(shiny_id + '_row_last_clicked', row_idx + 1, {priority: 'event'})
+      // rows_selected
+      let trs = tr.parent("tbody").children('tr');
+      let sel_idx = tagMatch(trs, (e)=> {return $(e).hasClass('selected')});
+      // Account for page and JS/R indexing
+      let rows_selected = sel_idx.map(i => i+1+(pn * pl)) 
+      Shiny.setInputValue(shiny_id + '_rows_selected', rows_selected, {priority: 'event'})
+    }
+  });
 }
+
+
+/**
+* Add important to the background-color on the policy_id column to retain the color style
+* @param {String} id Table ID
+* @returns  undefined
+*/
+
+function dt_retain_policy_color(id) {
+  var pid =  jqueryObjsOnly($(dt_table_id(id) + " td.dt-policy_id"))
+  if (pid) {
+    pid.forEach((e) => {
+      let el = $(e)
+      var style = el.attr('style');
+      if (style && !/important\;$/g.test(style)) {
+        el.attr('style', style.split(/\;$/)[0] + ' !important;')
+      }
+    })
+  }
+}
+
 
 /**
  * Get DT Column filter values as array
@@ -136,6 +145,7 @@ function dt_filter_set(id, filters = [], reset = false) {
   var t_nms = dt_names(id);
   // Table should be initialized before acted on
   if (typeof t_id == 'string') {
+    debugger;
     var sc = dt_filter_inputs(id);
     var input_val = Array(sc.length).fill('');
     var d_api = dt_api(t_id);
