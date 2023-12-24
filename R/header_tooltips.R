@@ -9,7 +9,7 @@
 #' @param .ns \code{fun} The ns function
 #' @param asis \code{lgl} Whether the `id` should be used asis, or automatically namespaced.
 #'
-#' @return \code{chr} JS Code to be passed to `DTExtend::DT_callback`
+#' @return \code{chr} JS Code to be passed to `DT_callback`
 #' @export
 #' @examples
 #' # To be used in combination with `DT_callback`. Tooltips can be bound to the rendered event with shinyjs

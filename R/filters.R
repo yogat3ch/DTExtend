@@ -1,4 +1,3 @@
-
 #' Create DT formatted filter statements from a list of filter ranges
 #'
 #' @param filters \code{named list} With names corresponding to data column names and numeric ranges (length 2 numeric vector) or character values to be applied to each column
