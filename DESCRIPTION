@@ -19,3 +19,4 @@ Imports:
     utils,
     UU (>= 1.44.0)
 Remotes: yogat3ch/UU
+URL: https://yogat3ch.github.io/DTExtend/

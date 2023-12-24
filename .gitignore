@@ -6,3 +6,4 @@
 .quarto
 node_modules
 inst/srcjs/combined.js
+docs
