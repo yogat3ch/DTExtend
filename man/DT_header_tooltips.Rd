@@ -27,19 +27,21 @@ DT_header_tooltips(
 \item{asis}{\code{lgl} Whether the \code{id} should be used asis, or automatically namespaced.}
 }
 \value{
-\code{chr} JS Code to be passed to \code{DTExtend::DT_callback}
+\code{chr} JS Code to be passed to \code{DT_callback}
 }
 \description{
 (Requires \code{\href{https://github.com/JohnCoene/tippy}{tippy}} or \code{\href{https://atomiks.github.io/tippyjs/v6/getting-started/}{tippyjs}} dependencies in the DOM)
 }
 \examples{
-# If used in combination with `DT_callback` tooltips can be bound to the rendered event
+# To be used in combination with `DT_callback`. Tooltips can be bound to the rendered event with shinyjs
 \dontrun{
 observeEvent(input$[DTOutputId]_rendered, {
-  shinyjs::runjs(
-    DTExtend::DT_header_tooltips("policy_choices", policies$data_colnames(), calls_only = TRU)
-  )
-})
+   shinyjs::runjs(
+     DTExtend::DT_header_tooltips(
+       id = "policy_choices",
+       col_nms = c("[Column names here]"),
+       calls_only = TRUE)
+     )
+   })
 }
-# Otherwise used by
 }

@@ -4,7 +4,14 @@
 \alias{DT_style_row_color}
 \title{Create a call to \link[DT]{styleRow} for matching color to backgroundColor for contrast}
 \usage{
-DT_style_row_color(rows, values, default = NULL, luminance_threshold = 0.5)
+DT_style_row_color(
+  rows,
+  values,
+  default = NULL,
+  luminance_threshold = 0.5,
+  text_dark = "#333",
+  text_light = "#FFF"
+)
 }
 \arguments{
 \item{rows}{the Row Indexes (starting from 1) that applies the CSS style. It could
@@ -18,6 +25,10 @@ for values other than levels. If \code{NULL}, the CSS value of non-matched
 cells will be left unchanged.}
 
 \item{luminance_threshold}{\code{num} value between 0 1 as the luminance threshold of the background that shifts the color to a contrasting color}
+
+\item{text_dark}{\code{chr} CSS color for dark text}
+
+\item{text_light}{\code{chr} CSS color for light text}
 }
 \description{
 Create a call to \link[DT]{styleRow} for matching color to backgroundColor for contrast

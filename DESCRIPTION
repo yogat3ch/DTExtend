@@ -1,6 +1,6 @@
 Package: DTExtend
 Title: Extends the DT package with helpful functionality
-Version: 0.0.0.9000
+Version: 1.3.0
 Authors@R: c( person("Stephen", "Holsenbeck", ,
        "stephen@virgalabs.io", role = c("aut", "cre"), comment =
        "2ndary email: sholsen@alumni.emory.edu"))
@@ -9,5 +9,13 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
-Imports: DT, glue, htmltools, purrr, rlang, shiny, utils, UU
+Imports: 
+    DT,
+    glue,
+    htmltools,
+    purrr,
+    rlang,
+    shiny,
+    utils,
+    UU (>= 1.44.0)
 Remotes: yogat3ch/UU
