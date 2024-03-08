@@ -193,12 +193,14 @@ function dt_search_icon(id) {
 * @param {String} character Filter box placeholder for character type columns
 * @param {String} integer Filter box placeholder for integer type columns
 * @param {String} number Filter box placeholder for number type columns
+* @param {String} disabled Filter box placeholder for disabled columns
 * @returns Changes the filters as a side affect, returns nothing
 */
-function dt_filter_placeholders(id, character = 'Search', integer = 'Use Slider', number = 'Use Slider') {
+function dt_filter_placeholders(id, character = 'Search', integer = 'Use Slider', number = 'Use Slider', disabled = "N/A") {
   id = dt_table_id(id);
   $(id + " td[data-type='character'] input[type='search']").attr('placeholder', character);
   $(id + " td[data-type='integer'] input[type='search']").attr('placeholder', integer);
   $(id + " td[data-type='number'] input[type='search']").attr('placeholder', number);
+  $(id + " td[data-type='number'] input[disabled]").attr('placeholder', "N/A");
 }
 
