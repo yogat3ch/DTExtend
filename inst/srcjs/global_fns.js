@@ -23,8 +23,42 @@ function seq(start, stop, step) {
     }
     return out;
   }
+/**
+ * Subset an array in R fashion
+ *
+ * @param {Array} arr to subset
+ * @param {*} [rc=[1,1]] row, column indices to subset. Set to null or undefined to omit an index
+ * @return {*} Array or value depending on the subset  
+ */
+function arr_subset(arr, rc = [1,1]) {
+  out = [];
 
-
+  if (rc[0] && rc[1]) {
+    out = arr[rc[0]][rc[1]];
+  } else if (rc[1]) {
+    for (let r = 0; r < arr.length; r++) {
+      out.push(arr[r][rc[1]]);
+    }
+  } else if (rc[0]) {
+    out = arr[rc[0]];
+  }
+  return out;
+}
+/**
+ * Retrieve indices of TRUE values in R fashion
+ *
+ * @param {Array} array of Boolean values
+ * @return {Array/Number} of indices of true values 
+ */
+function which(array) {
+  let out = [];
+  for (let index = 0; index < array.length; index++) {
+    if (array[index]) {
+      out.push(index);
+    }
+  }
+  return out;
+}
 /** Return true when element is ready
 * @param {String} selector Element to wait for
 * @usage waitForEl('.some-class').then((elm) => {
