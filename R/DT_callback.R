@@ -17,7 +17,7 @@
 DT_callback <- function(..., search_icon = TRUE, page_input = TRUE, pageLength_input = TRUE, filter_placeholders = TRUE, retain_policy_color = TRUE, retain_selections = TRUE, tab_accessible = FALSE, debugger = FALSE) {
 
   table_id <- "table.table().node().id"
-  shiny_id <- UU::glue_js("$('#' + *{table_id}*).parent().parent().attr('id')")
+  shiny_id <- UU::glue_js("dt_shiny_id(*{table_id}*, rm_hash = true)")
   out <- UU::glue_js(c("var id = *{shiny_id}*;
                        var render_id = id + '_rendered';
                        window[render_id] = window[render_id] || 0;
