@@ -9,6 +9,7 @@ function dt_table_id(id, rm_hash = false) {
   if (!/^\#?DataTables/g.test(id)) {
     out =  $( `${id_check(id)} table` ).attr('id');
   } else {
+    console.log("dt_table_id: not a valid ID")
     out = id;
   }
   return id_check(out, rm_hash = rm_hash);
@@ -33,8 +34,9 @@ function dt_names(id) {
 function dt_shiny_id(id, rm_hash = false) {
   var out = undefined;
   if (/^\#?DataTables/g.test(id)) {
-    out =  $( `${id_check(id)}` ).parent('.datatables').attr("id");
+    out =  $(id_check(id) + "_wrapper").parent('.datatables').attr("id");
   } else {
+    console.log("dt_shiny_id: not a valid Datatables id")
     out = id;
   }
   return id_check(out, rm_hash = rm_hash);
