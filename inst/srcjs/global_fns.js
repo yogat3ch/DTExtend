@@ -160,35 +160,3 @@ return Object.fromEntries(
 function isVisible(selector) {
     return $(selector).is(":visible");
 }
-
-/**
-* Transforms a button appearance to indicate the next click will "Close" a panel
-*
-* @param {string} selector The selector for the element to close/open
-* @param {string} [in_html="Close Notes"] The text the button will display in the open state (so the action should be close)
-* @param {string} [icon_class="fa fa-rectangle-xmark"] The icon when button is in the open state (so the action should be close)
-*/
-function buttonClose(selector, in_html = "Close Notes", icon_class = "fa fa-rectangle-xmark") {
-    var sel_chr = "." + selector;
-    selector = id_check(selector);
-    var sel = $(selector);
-    sel.toggleClass("btn-pressed")
-    var icon = $(sel.find("i")[0]);
-    if (globalThis[[sel_chr]] === undefined) {
-      globalThis[[sel_chr]] = {
-        fired: true,
-        html: sel.text(),
-        icon: icon.attr("class")
-      };
-    }
-    
-    if (icon.hasClass(globalThis[[sel_chr]].icon)) {
-      sel.html(`<i class="${icon_class}" role="presentation" aria-label="close icon"></i>
-      ${in_html}`);
-    } else {
-      in_html = globalThis[[sel_chr]].html;
-      icon_class = globalThis[[sel_chr]].icon
-      sel.html(`<i class="fa ${icon_class}" role="presentation" aria-label="open icon"></i>
-      ${in_html}`);
-    }
-  }
