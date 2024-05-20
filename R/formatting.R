@@ -7,6 +7,8 @@
 #'
 #' @export
 #'
+#' @examples
+#' DT_formatNum(DT::datatable(LifeCycleSavings))
 
 DT_formatNum <-
   function(table,
@@ -19,6 +21,11 @@ DT_formatNum <-
            before = TRUE,
            zero.print = NULL,
            rows = NULL) {
+
+    assertthat::assert_that(
+      inherits(table, "datatables"),
+      msg = "Invalid table argument; a table object created from DT::datatable() was expected"
+    )
 
     DT::formatCurrency(
       table = table,
