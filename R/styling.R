@@ -57,42 +57,6 @@ DT_style_row <-
     )
   }
 
-#' @title Format numbers in a datatable
-#' @description
-#' Format datatable numeric values with commas and no decimal places
-#'
-#' @inherit DT::formatCurrency params return examples
-#'
-#' @export
-#'
-
-DT_formatNum <-
-  function(table,
-           columns = names(purrr::keep(table$x$data, is.numeric)),
-           currency = "",
-           interval = 3,
-           mark = ",",
-           digits = 0,
-           dec.mark = getOption("OutDec"),
-           before = TRUE,
-           zero.print = NULL,
-           rows = NULL) {
-
-    DT::formatCurrency(
-      table = table,
-      columns = columns,
-      currency = currency,
-      interval = interval,
-      mark = mark,
-      digits = digits,
-      dec.mark = dec.mark,
-      before = before,
-      zero.print = zero.print,
-      rows = rows
-    )
-  }
-
-
 #' @title Style DT divergent color bar
 #'
 #' @description Style DT color bars for values that diverge from 0. From \href{https://github.com/federicomarini/GeneTonic}{federicomarini/GeneTonic}

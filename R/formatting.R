@@ -40,3 +40,4 @@ DT_formatNum <-
       rows = rows
     )
   }
+
