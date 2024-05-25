@@ -5,13 +5,25 @@
  * @param {Number} end Ending number of sequence
  * @return {Array} with numeric values from start to end 
  */
-function seq(start, stop, step) {
+function seq(start, stop, step = 1) {
     return Array.from(
     { length: (stop - start) / step + 1 },
     (value, index) => start + index * step
     );
 }
 
+
+
+/**
+ * Sum an array
+ * @param {Array} arr of numeric
+ * @returns {Numeric} sum
+ */
+function sum(arr) {
+  return arr.reduce((p, v) => {
+    return p + v;
+  });
+}
  /**
     * @param  {Object} jq - A jQuery DOM object
     * @returns {Array} stripped of jQuery methods
