@@ -50,7 +50,7 @@ DT_style_row <-
       valueColumns = valueColumns,
       target = target,
       fontWeight = fontWeight,
-      color = DT::styleRow(rows, color),
+      color = if (inherits(color, "JS_EVAL")) color else DT::styleRow(rows, color),
       backgroundColor = DT::styleRow(rows, backgroundColor),
       lineHeight = lineHeight,
       ...
