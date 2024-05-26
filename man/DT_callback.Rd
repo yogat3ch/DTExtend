@@ -10,7 +10,8 @@ DT_callback(
   page_input = TRUE,
   pageLength_input = TRUE,
   filter_placeholders = TRUE,
-  retain_policy_color = TRUE,
+  retain_color = TRUE,
+  retain_color_class = NULL,
   retain_selections = TRUE,
   tab_accessible = FALSE,
   debugger = FALSE
@@ -27,7 +28,9 @@ DT_callback(
 
 \item{filter_placeholders}{\code{lgl} Whether to replace the Filter column placeholders using JS function \code{dt_filter_placeholders}}
 
-\item{retain_policy_color}{\code{lgl} Whether to retain the color of the Policy ID column.}
+\item{retain_color}{\code{lgl} Whether to retain the color of a column. Requires value for \code{retain_color_class}}
+
+\item{retain_color_class}{\code{chr} The class of the \code{td} elements to retain the color on.}
 
 \item{retain_selections}{\code{lgl} Whether to retain the selections from the previous render of the table}
 

@@ -4,7 +4,10 @@
 \alias{useDTExtend}
 \title{Include in the DOM to provide supporting dependencies for this package}
 \usage{
-useDTExtend()
+useDTExtend(use_tippy = FALSE)
+}
+\arguments{
+\item{use_tippy}{\code{lgl} Whether to use the Tippy package if using \code{DT_header_tooltips}}
 }
 \value{
 \code{None} Attaches dependency to the DOM
