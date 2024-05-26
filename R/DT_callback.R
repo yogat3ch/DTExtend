@@ -5,7 +5,8 @@
 #' @param page_input \code{lgl} Whether to include a custom Shiny input that saves the page number as `input$[table output id]_page`.
 #' @param pageLength_input \code{lgl} Whether to include a custom Shiny input that saves the pageLength as `input$[table output id]_pageLength`.
 #' @param filter_placeholders \code{lgl} Whether to replace the Filter column placeholders using JS function `dt_filter_placeholders`
-#' @param retain_policy_color \code{lgl} Whether to retain the color of the Policy ID column.
+#' @param retain_color \code{lgl} Whether to retain the color of a column. Requires value for `retain_color_class`
+#' @param retain_color_class \code{chr} The class of the `td` elements to retain the color on.
 #' @param retain_selections \code{lgl} Whether to retain the selections from the previous render of the table
 #' @param tab_accessible \code{lgl} Whether to enable row selection by pressing the `Enter` key. Requires `extensions = 'KeyTables'` with `options = list(keys = TRUE)`. Sets a jQuery event listener which doesn't need to be re-established on table redraw.
 #' @param debugger \code{lgl} Whether to insert a debugger statement in the callback function
@@ -14,38 +15,37 @@
 #' @export
 #'
 
-DT_callback <- function(..., search_icon = TRUE, page_input = TRUE, pageLength_input = TRUE, filter_placeholders = TRUE, retain_policy_color = TRUE, retain_selections = TRUE, tab_accessible = FALSE, debugger = FALSE) {
+DT_callback <- function(..., search_icon = TRUE, page_input = TRUE, pageLength_input = TRUE, filter_placeholders = TRUE, retain_color = TRUE, retain_color_class = NULL, retain_selections = TRUE, tab_accessible = FALSE, debugger = FALSE) {
 
-  table_id <- "table.table().node().id"
-  shiny_id <- UU::glue_js("dt_shiny_id(*{table_id}*, rm_hash = true)")
-  out <- UU::glue_js(c("var id = *{shiny_id}*;
-                       var render_id = id + '_rendered';
-                       window[render_id] = window[render_id] || 0;
-           Shiny.setInputValue(id + '_rendered', window[render_id], {priority: 'event'});
-           Shiny.setInputValue(*{shiny_id}* + '_page', table.page() + 1, {priority: 'event'});"))
+  table_id = "get_dt_id_from_table(table);"
+  out <- c(
+    # Create the props object
+    "let props = new dt_props(table);"
+  )
   if (debugger) {
     out <- c(out, "debugger;")
   }
   if (page_input) {
-    out <- c(out, UU::glue_js("table.on('page.dt', () => {
-          Shiny.setInputValue(*{shiny_id}* + '_page', table.page() + 1, {priority: 'event'});
-          return table.page();
-          });"))
+    out <- c(out, UU::glue_js("
+    table.on('page.dt', () => {
+      get_dt_props(table).shinyPage();
+      return table.page();
+    });"))
   }
-  lines <- c(paste0("var id = ", table_id, ";"), "var table_api = $(id).DataTable()")
+  lines_on_draw <- c(paste0("var id = ", table_id, ";"), "var table_api = $(id).DataTable()")
 
   retain_on_draw <- c(
     "search_icon",
     "filter_placeholders",
     "retain_policy_color"
   )
+
   features <-
     rlang::env_get_list(
       environment(),
       nms = c(
         "search_icon",
         "filter_placeholders",
-        "retain_policy_color",
         "tab_accessible"
       )
     )
@@ -55,19 +55,35 @@ DT_callback <- function(..., search_icon = TRUE, page_input = TRUE, pageLength_i
       call <- glue::glue("dt_{feature_nms[i]}(id);")
       if (feature_nms[i] %in% retain_on_draw) {
         # Set placeholders on raw event listener
-        lines <- c(lines, call)
+        lines_on_draw <- c(lines_on_draw, call)
       }
       # Set placeholders on initial render
       out <- c(out, call)
     }
   }
 
+  if (retain_color) {
+    stopifnot("`retain_color_class` must be a character" = is.character(retain_color_class))
+    # Create the call using the class provided
+    call <- UU::glue_js("dt_retain_color(id, '*{retain_color_class}*');")
+    # Add to on draw
+    lines_on_draw <- c(
+      lines_on_draw,
+      call
+    )
+    # Add to initial render
+    out <- c(
+      out,
+      call
+    )
+  }
+
   if (!retain_selections) {
-    lines <- c(lines, "table_api.rows().deselect();")
+    lines_on_draw <- c(lines_on_draw, "table_api.rows().deselect();")
   }
   out <- c(out, UU::glue_js("
        table.on('draw.dt', () => {
-         *{glue::glue_collapse(lines, sep = '\n')}*
+         *{glue::glue_collapse(lines_on_draw, sep = '\n')}*
        })")
   )
 
@@ -75,7 +91,10 @@ DT_callback <- function(..., search_icon = TRUE, page_input = TRUE, pageLength_i
   if (pageLength_input) {
     out <- c(out,
              UU::glue_js("table.on('length.dt', (e, settings, len) => {
-               Shiny.setInputValue(*{shiny_id}* + '_pageLength', len, {priority: 'event'});
+               get_dt_props(table).shinyPageLength()
+
+
+               return len;
              })")
              )
   }
